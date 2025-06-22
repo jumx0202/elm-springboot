@@ -29,4 +29,11 @@ public class BusinessResponse {
         response.setMsg("商家不存在");
         return response;
     }
+
+    public static BusinessResponse error(String message, Integer code) {
+        BusinessResponse response = new BusinessResponse();
+        response.setCode(code);
+        response.setMsg(message);
+        return response;
+    }
 } 

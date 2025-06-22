@@ -39,14 +39,26 @@ public class BusinessController {
     }
 
     @PostMapping("/getBusinessById")
-    public BusinessResponse getBusinessById(@RequestBody Map<String, Integer> params) {
-        Integer id = params.get("ID");
-        Business business = businessService.findBusinessById(id);
-        if (business == null) {
-            return BusinessResponse.error();
+    public ResponseEntity<BusinessResponse> getBusinessById(@RequestBody Map<String, Integer> params) {
+        try {
+            Integer id = params.get("ID");
+            if (id == null) {
+                return ResponseEntity.badRequest().body(BusinessResponse.error("ID不能为空", 400));
+            }
+            if (id <= 0) {
+                return ResponseEntity.badRequest().body(BusinessResponse.error("ID必须为正数", 400));
+            }
+            
+            Business business = businessService.findBusinessById(id);
+            if (business == null) {
+                return ResponseEntity.ok(BusinessResponse.error());
+            }
+            
+            return ResponseEntity.ok(BusinessResponse.success(business));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(BusinessResponse.error("服务器内部错误", 500));
         }
-        System.out.println("Returning business: " + business);
-        return BusinessResponse.success(business);
     }
 
 }
