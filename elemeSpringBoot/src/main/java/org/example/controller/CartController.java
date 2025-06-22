@@ -252,28 +252,16 @@ public class CartController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            Integer result = cartService.removeFromCart(itemId);
+            Boolean result = cartService.removeFromCart(itemId);
             
-            switch (result) {
-                case 0:
-                    response.put("code", 200);
-                    response.put("message", "删除成功");
-                    return ResponseEntity.ok(response);
-                    
-                case 1:
-                    response.put("code", 400);
-                    response.put("message", "商品ID无效");
-                    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-                    
-                case 2:
-                    response.put("code", 404);
-                    response.put("message", "商品不存在");
-                    return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-                    
-                default:
-                    response.put("code", 500);
-                    response.put("message", "系统异常");
-                    return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            if (result) {
+                response.put("code", 200);
+                response.put("message", "删除成功");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("code", 400);
+                response.put("message", "删除失败，商品不存在或ID无效");
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
             
         } catch (Exception e) {
@@ -294,23 +282,16 @@ public class CartController {
         Map<String, Object> response = new HashMap<>();
         
         try {
-            Integer result = cartService.clearCart(userPhone);
+            Boolean result = cartService.clearCart(userPhone);
             
-            switch (result) {
-                case 0:
-                    response.put("code", 200);
-                    response.put("message", "清空成功");
-                    return ResponseEntity.ok(response);
-                    
-                case 1:
-                    response.put("code", 400);
-                    response.put("message", "用户手机号无效");
-                    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-                    
-                default:
-                    response.put("code", 500);
-                    response.put("message", "系统异常");
-                    return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+            if (result) {
+                response.put("code", 200);
+                response.put("message", "清空成功");
+                return ResponseEntity.ok(response);
+            } else {
+                response.put("code", 400);
+                response.put("message", "清空失败，用户手机号无效");
+                return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
             }
             
         } catch (Exception e) {
@@ -422,13 +403,13 @@ public class CartController {
             
             switch (operation.toLowerCase()) {
                 case "clear":
-                    Integer clearResult = cartService.clearCart(userPhone);
-                    response.put("code", clearResult == 0 ? 200 : 400);
-                    response.put("message", clearResult == 0 ? "批量清空成功" : "批量清空失败");
+                    Boolean clearResult = cartService.clearCart(userPhone);
+                    response.put("code", clearResult ? 200 : 400);
+                    response.put("message", clearResult ? "批量清空成功" : "批量清空失败");
                     break;
                     
                 case "validate":
-                    boolean isValid = cartService.validateCartForCheckout(userPhone);
+                    Boolean isValid = cartService.validateCartForCheckout(userPhone);
                     response.put("code", 200);
                     response.put("message", "批量验证完成");
                     response.put("data", Map.of("valid", isValid));

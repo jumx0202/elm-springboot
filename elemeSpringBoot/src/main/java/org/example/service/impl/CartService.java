@@ -156,22 +156,22 @@ public class CartService implements ICartService {
      * 从购物车移除商品
      */
     @Override
-    public Integer removeFromCart(Long itemId) {
+    public Boolean removeFromCart(Long itemId) {
         try {
             if (itemId == null || itemId <= 0) {
-                return 1; // 商品ID无效
+                return false; // 商品ID无效
             }
             
             CartItem removedItem = cartItemStore.remove(itemId);
             if (removedItem == null) {
-                return 2; // 商品不存在
+                return false; // 商品不存在
             }
             
-            return 0; // 移除成功
+            return true; // 移除成功
             
         } catch (Exception e) {
             System.err.println("从购物车移除商品时发生异常: " + e.getMessage());
-            return -1; // 系统异常
+            return false; // 系统异常
         }
     }
     
@@ -214,11 +214,11 @@ public class CartService implements ICartService {
      * 清空用户购物车
      */
     @Override
-    public Integer clearCart(String userPhoneNumber) {
+    public Boolean clearCart(String userPhoneNumber) {
         try {
             ValidationResult phoneValidation = ValidationUtils.validatePhoneNumber(userPhoneNumber);
             if (!phoneValidation.isSuccess()) {
-                return 1; // 手机号无效
+                return false; // 手机号无效
             }
             
             List<Long> itemsToRemove = new ArrayList<>();
@@ -237,11 +237,11 @@ public class CartService implements ICartService {
                 cartItemStore.remove(itemId);
             }
             
-            return 0; // 清空成功
+            return true; // 清空成功
             
         } catch (Exception e) {
             System.err.println("清空用户购物车时发生异常: " + e.getMessage());
-            return -1; // 系统异常
+            return false; // 系统异常
         }
     }
     
@@ -293,7 +293,7 @@ public class CartService implements ICartService {
      * 复杂的验证逻辑，支持白盒测试的多条件分支
      */
     @Override
-    public boolean validateCartForCheckout(String userPhoneNumber) {
+    public Boolean validateCartForCheckout(String userPhoneNumber) {
         try {
             // 1. 手机号验证
             ValidationResult phoneValidation = ValidationUtils.validatePhoneNumber(userPhoneNumber);

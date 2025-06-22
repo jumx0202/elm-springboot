@@ -247,7 +247,7 @@ onMounted(() => {
       </div>
 
       <van-popup
-        v-model:show="showCartItems"
+        v-model="showCartItems"
         position="bottom"
         round
         class="cart-popup">
