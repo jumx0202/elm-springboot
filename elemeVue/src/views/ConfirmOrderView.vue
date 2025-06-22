@@ -341,7 +341,7 @@ const submitOrder = async () => {
     </div>
 
     <!-- 地址选择弹窗 -->
-    <van-popup v-model:show="showAddressPopup" position="bottom" round>
+    <van-popup v-model="showAddressPopup" position="bottom" round>
       <div class="address-popup">
         <div class="popup-header">
           <h3>选择收货地址</h3>
@@ -358,14 +358,14 @@ const submitOrder = async () => {
               <div class="address-main">{{ address.address }} {{ address.detail }}</div>
               <div class="address-sub">{{ address.contact }} {{ address.phone }}</div>
             </div>
-            <van-tag type="primary" v-if="address.tag">{{ address.tag }}</van-tag>
+            <van-tag v-if="address.tag">{{ address.tag }}</van-tag>
           </div>
         </div>
       </div>
     </van-popup>
 
     <!-- 新增地址表单 -->
-    <van-popup v-model:show="showNewAddressForm" position="bottom" round>
+    <van-popup v-model="showNewAddressForm" position="bottom" round>
       <div class="address-form">
         <div class="form-header">
           <h3>新增地址</h3>
@@ -413,7 +413,7 @@ const submitOrder = async () => {
     </van-popup>
 
     <!-- 送达时间选择 -->
-    <van-popup v-model:show="showTimePopup" position="bottom" round>
+    <van-popup v-model="showTimePopup" position="bottom" round>
       <div class="time-popup">
         <div class="popup-header">
           <h3>选择送达时间</h3>
@@ -433,7 +433,7 @@ const submitOrder = async () => {
     </van-popup>
 
     <!-- 备注弹窗 -->
-    <van-popup v-model:show="showRemarkPopup" position="bottom" round>
+    <van-popup v-model="showRemarkPopup" position="bottom" round>
       <div class="remark-popup">
         <div class="popup-header">
           <h3>添加备注</h3>

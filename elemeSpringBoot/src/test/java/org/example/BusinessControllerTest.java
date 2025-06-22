@@ -13,6 +13,9 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -28,7 +31,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * BusinessController单元测试类
  * 测试商家控制器的各种功能
  */
-@WebMvcTest(BusinessController.class)
+@WebMvcTest(value = BusinessController.class, 
+    properties = {"spring.jpa.hibernate.ddl-auto=none", "spring.datasource.initialization-mode=never"})
+@ImportAutoConfiguration({WebMvcAutoConfiguration.class, JacksonAutoConfiguration.class})
 @DisplayName("商家控制器测试")
 class BusinessControllerTest {
 
