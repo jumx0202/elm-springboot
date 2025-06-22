@@ -20,15 +20,25 @@ interface DeliveryTime {
   label: string
 }
 
+interface FoodItem {
+  id: number
+  name: string
+  img: string
+  redPrice: number
+  grayPrice: number
+}
+
+interface MerchantData {
+  id: number
+  businessName: string
+  delivery: string
+  imgLogo: string
+}
+
 interface OrderDetail {
   id: number
-  merchantData: {
-    id: number
-    businessName: string
-    delivery: string
-    imgLogo: string
-  }
-  selectedItems: any[]
+  merchantData: MerchantData
+  selectedItems: FoodItem[]
   price: number
 }
 
@@ -104,8 +114,8 @@ const invoiceInfo = ref({
   taxNumber: ''
 })
 
-const merchantData = ref(null)
-const selectedItems = ref([])
+const merchantData = ref<MerchantData | null>(null)
+const selectedItems = ref<FoodItem[]>([])
 const orderDetail = ref<OrderDetail | null>(null)
 const packagingFee = ref(1.6)  // 打包费
 const originalDeliveryFee = ref(6.0)  // 原配送费

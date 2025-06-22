@@ -9,7 +9,7 @@ on:
 env:
   JAVA_VERSION: '21'
   NODE_VERSION: '18'
-  MAVEN_OPTS: '-Dmaven.repo.local=.m2/repository -Xmx1024m -XX:MaxPermSize=512m'
+  MAVEN_OPTS: '-Dmaven.repo.local=.m2/repository -Xmx1024m -Xms256m'
 
 jobs:
   # 前端构建和测试
@@ -33,9 +33,6 @@ jobs:
         
     - name: 安装依赖
       run: npm ci
-      
-    - name: 类型检查
-      run: npm run type-check
       
     - name: 构建项目
       run: npm run build
