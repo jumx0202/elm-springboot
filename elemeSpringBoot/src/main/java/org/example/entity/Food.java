@@ -9,6 +9,7 @@ import org.hibernate.validator.constraints.Length;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.ArrayList;
 
 @Data
 @Entity
@@ -66,6 +67,8 @@ public class Food {
         this.discount = discounts;
         if (discounts != null && !discounts.trim().isEmpty()) {
             this.discountList = Arrays.asList(discounts.split("-"));
+        } else {
+            this.discountList = new ArrayList<>();
         }
     }
 }

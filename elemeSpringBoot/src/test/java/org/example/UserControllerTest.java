@@ -45,14 +45,28 @@ class UserControllerTest {
     @MockBean
     private IUserService userService;
 
+    @MockBean
+    private org.example.service.EmailService emailService;
+
     @Autowired
     private WebApplicationContext webApplicationContext;
 
     private ObjectMapper objectMapper = new ObjectMapper();
+    private User testUser;
 
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        
+        // 初始化测试用户数据
+        testUser = new User();
+        testUser.setPhoneNumber("13812345678");
+        testUser.setPassword("Test123");
+        testUser.setName("张三");
+        testUser.setEmail("test@example.com");
+        testUser.setGender("男");
+        testUser.setLoginAttempts(0);
+        testUser.setAccountLocked(false);
     }
 
     @Nested

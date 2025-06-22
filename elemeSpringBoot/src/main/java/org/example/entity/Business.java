@@ -52,7 +52,11 @@ public class Business {
 
     public void setDiscounts(String discounts) {
         this.discounts = discounts;
-        this.discountsList = Arrays.asList(discounts.split("-"));
+        if (discounts != null && !discounts.trim().isEmpty()) {
+            this.discountsList = Arrays.asList(discounts.split("-"));
+        } else {
+            this.discountsList = new ArrayList<>();
+        }
     }
 
     public void setSidebarItems(String sidebarItems) {
