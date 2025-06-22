@@ -5,15 +5,21 @@ import org.example.controller.FoodController;
 import org.example.dto.IdsWrapper;
 import org.example.entity.Food;
 import org.example.service.IFoodService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -26,20 +32,32 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * FoodController单元测试类
- * 测试商品控制器的各种功能
+ * 测试食物控制器的各种功能
  */
-@WebMvcTest(FoodController.class)
-@DisplayName("商品控制器测试")
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureWebMvc
+@TestPropertySource(properties = {
+    "spring.datasource.url=jdbc:h2:mem:testdb",
+    "spring.jpa.hibernate.ddl-auto=none",
+    "spring.sql.init.mode=never"
+})
+@DisplayName("食物控制器测试")
 class FoodControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private IFoodService foodService;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private WebApplicationContext webApplicationContext;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    }
 
     @Nested
     @DisplayName("根据ID列表获取商品测试")

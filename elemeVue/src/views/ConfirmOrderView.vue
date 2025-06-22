@@ -248,11 +248,11 @@ const submitOrder = async () => {
 
     <!-- 订单详情 -->
     <div class="order-details">
-      <div class="shop-name">
-        <img :src="merchantData?.imgLogo" class="shop-logo" alt="shop logo">
-        <span>{{ merchantData?.businessName }}</span>
+      <div class="shop-name" v-if="merchantData">
+        <img :src="merchantData.imgLogo" class="shop-logo" alt="shop logo">
+        <span>{{ merchantData.businessName }}</span>
       </div>
-      <div class="food-items">
+      <div class="food-items" v-if="selectedItems && selectedItems.length > 0">
         <div v-for="item in selectedItems" :key="item.id" class="food-item">
           <div class="food-item-left">
             <img :src="item.img" :alt="item.name" class="food-img">

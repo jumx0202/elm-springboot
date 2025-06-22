@@ -6,14 +6,19 @@ import org.example.dto.OrderDetailDTO;
 import org.example.dto.OrderRequestDTO;
 import org.example.entity.UserOrder;
 import org.example.service.IUserOrderService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -30,18 +35,30 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * OrderController单元测试类
  * 测试订单控制器的各种功能
  */
-@WebMvcTest(OrderController.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureWebMvc
+@TestPropertySource(properties = {
+    "spring.datasource.url=jdbc:h2:mem:testdb",
+    "spring.jpa.hibernate.ddl-auto=none",
+    "spring.sql.init.mode=never"
+})
 @DisplayName("订单控制器测试")
 class OrderControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
 
     @MockBean
     private IUserOrderService userOrderService;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private WebApplicationContext webApplicationContext;
+
+    private ObjectMapper objectMapper = new ObjectMapper();
+
+    @BeforeEach
+    void setUp() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+    }
 
     @Nested
     @DisplayName("根据ID获取用户订单测试")

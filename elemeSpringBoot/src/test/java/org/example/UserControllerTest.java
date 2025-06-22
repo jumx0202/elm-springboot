@@ -3,65 +3,56 @@ package org.example;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.controller.UserController;
 import org.example.entity.User;
-import org.example.mapper.IUserMapper;
-import org.example.service.EmailService;
 import org.example.service.IUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Nested;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureWebMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 /**
  * UserController单元测试类
- * 测试用户控制器的各种API端点
+ * 测试用户控制器的各种功能
  */
-@WebMvcTest(UserController.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AutoConfigureWebMvc
+@TestPropertySource(properties = {
+    "spring.datasource.url=jdbc:h2:mem:testdb",
+    "spring.jpa.hibernate.ddl-auto=none",
+    "spring.sql.init.mode=never"
+})
 @DisplayName("用户控制器测试")
 class UserControllerTest {
 
-    @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
-    private IUserMapper userMapper;
 
     @MockBean
     private IUserService userService;
 
-    @MockBean
-    private EmailService emailService;
-
     @Autowired
-    private ObjectMapper objectMapper;
+    private WebApplicationContext webApplicationContext;
 
-    private User testUser;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
-        testUser = new User();
-        testUser.setPhoneNumber("13812345678");
-        testUser.setPassword("Test123");
-        testUser.setName("张三");
-        testUser.setEmail("test@example.com");
-        testUser.setGender("男");
-        testUser.setLoginAttempts(0);
-        testUser.setAccountLocked(false);
+        mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
     }
 
     @Nested
