@@ -1,0 +1,11 @@
+scenario,input_type,input_value,expected_result,description
+invalid_phone,phoneNumber,abc123,400,无效手机号格式
+empty_phone,phoneNumber,,400,空手机号
+sql_injection,phoneNumber,"' OR '1'='1' --",400,SQL注入攻击
+xss_attack,deliveryAddress,"<script>alert('xss')</script>",400,XSS脚本注入
+large_quantity,quantity,99999,400,超大数量测试
+negative_price,totalPrice,-100,400,负价格测试
+invalid_business_id,businessId,99999,404,不存在的商家ID
+invalid_food_id,foodId,99999,404,不存在的菜品ID
+empty_address,deliveryAddress,,400,空配送地址
+long_address,deliveryAddress,"这是一个非常非常长的地址，超过了正常地址的长度限制，用来测试系统对超长输入的处理能力",400,超长地址测试 

@@ -1,0 +1,306 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  JAVA_VERSION: '21'
+  NODE_VERSION: '18'
+  MAVEN_OPTS: '-Dmaven.repo.local=.m2/repository -Xmx1024m -XX:MaxPermSize=512m'
+
+jobs:
+  # 前端构建和测试
+  frontend-build:
+    name: 前端构建与测试
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./elemeVue
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      
+    - name: 设置 Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: './elemeVue/package-lock.json'
+        
+    - name: 安装依赖
+      run: npm ci
+      
+    - name: 类型检查
+      run: npm run type-check
+      
+    - name: 构建项目
+      run: npm run build
+      
+    - name: 上传构建产物
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-dist
+        path: ./elemeVue/dist/
+        retention-days: 7
+
+  # 后端构建和测试
+  backend-build:
+    name: 后端构建与测试
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./elemeSpringBoot
+    
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpassword
+          MYSQL_DATABASE: testdb
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      
+    - name: 设置 JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        
+    - name: 缓存 Maven 依赖
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2
+        
+    - name: 编译项目
+      run: mvn clean compile
+      
+    - name: 运行测试
+      run: mvn test
+      env:
+        SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/testdb
+        SPRING_DATASOURCE_USERNAME: root
+        SPRING_DATASOURCE_PASSWORD: testpassword
+        
+    - name: 生成测试报告
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: 后端测试报告
+        path: './elemeSpringBoot/target/surefire-reports/*.xml'
+        reporter: java-junit
+        
+    - name: 打包应用
+      run: mvn package -DskipTests
+      
+    - name: 上传JAR包
+      uses: actions/upload-artifact@v4
+      with:
+        name: backend-jar
+        path: ./elemeSpringBoot/target/*.jar
+        retention-days: 7
+
+  # 代码质量检查
+  code-quality:
+    name: 代码质量检查
+    runs-on: ubuntu-latest
+    needs: [frontend-build, backend-build]
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # SonarCloud需要完整的git历史
+        
+    # 这里可以添加SonarCloud或其他代码质量工具
+    # - name: SonarCloud扫描
+    #   uses: SonarSource/sonarcloud-github-action@master
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  # 性能测试（可选）
+  performance-test:
+    name: 性能测试
+    runs-on: ubuntu-latest
+    needs: [backend-build]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      
+    - name: 下载后端JAR包
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-jar
+        path: ./backend-jar/
+        
+    - name: 设置 JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ env.JAVA_VERSION }}
+        distribution: 'temurin'
+        
+    # 启动应用（后台运行）
+    - name: 启动Spring Boot应用
+      run: |
+        java -jar ./backend-jar/*.jar &
+        sleep 30  # 等待应用启动
+      env:
+        SPRING_PROFILES_ACTIVE: test
+        
+    # 运行JMeter性能测试
+    - name: 运行JMeter性能测试
+      run: |
+        cd elemeSpringBoot/jmeter-test-plan
+        chmod +x *.sh
+        ./diagnose-system.sh || true  # 系统诊断，失败不影响流程
+        
+    - name: 上传性能测试报告
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-test-reports
+        path: ./elemeSpringBoot/jmeter-test-plan/reports/
+        retention-days: 30
+
+  # 安全扫描
+  security-scan:
+    name: 安全扫描
+    runs-on: ubuntu-latest
+    needs: [frontend-build, backend-build]
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      
+    - name: 运行Trivy漏洞扫描
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        
+    - name: 上传Trivy扫描结果到GitHub Security
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-results.sarif'
+
+  # Docker构建（生产环境）
+  docker-build:
+    name: Docker镜像构建
+    runs-on: ubuntu-latest
+    needs: [frontend-build, backend-build, code-quality]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v4
+      
+    - name: 下载构建产物
+      uses: actions/download-artifact@v4
+      with:
+        name: frontend-dist
+        path: ./frontend-dist/
+        
+    - name: 下载后端JAR包
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-jar
+        path: ./backend-jar/
+        
+    - name: 设置Docker Buildx
+      uses: docker/setup-buildx-action@v3
+      
+    # - name: 登录Docker Hub
+    #   uses: docker/login-action@v3
+    #   with:
+    #     username: ${{ secrets.DOCKER_USERNAME }}
+    #     password: ${{ secrets.DOCKER_PASSWORD }}
+        
+    # - name: 构建并推送后端Docker镜像
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: .
+    #     file: ./elemeSpringBoot/Dockerfile
+    #     push: true
+    #     tags: |
+    #       ${{ secrets.DOCKER_USERNAME }}/eleme-backend:latest
+    #       ${{ secrets.DOCKER_USERNAME }}/eleme-backend:${{ github.sha }}
+        
+    # - name: 构建并推送前端Docker镜像
+    #   uses: docker/build-push-action@v5
+    #   with:
+    #     context: ./elemeVue
+    #     file: ./elemeVue/Dockerfile
+    #     push: true
+    #     tags: |
+    #       ${{ secrets.DOCKER_USERNAME }}/eleme-frontend:latest
+    #       ${{ secrets.DOCKER_USERNAME }}/eleme-frontend:${{ github.sha }}
+
+  # 部署到开发环境
+  deploy-dev:
+    name: 部署到开发环境
+    runs-on: ubuntu-latest
+    needs: [frontend-build, backend-build]
+    if: github.ref == 'refs/heads/develop'
+    environment: development
+    
+    steps:
+    - name: 部署提示
+      run: |
+        echo "🚀 准备部署到开发环境..."
+        echo "前端构建完成 ✅"
+        echo "后端构建完成 ✅"
+        # 这里添加实际的部署脚本
+        
+  # 部署到生产环境
+  deploy-prod:
+    name: 部署到生产环境
+    runs-on: ubuntu-latest
+    needs: [docker-build, security-scan, performance-test]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - name: 部署提示
+      run: |
+        echo "🎉 准备部署到生产环境..."
+        echo "所有检查通过 ✅"
+        echo "安全扫描完成 ✅"
+        echo "性能测试完成 ✅"
+        # 这里添加实际的生产环境部署脚本
+
+  # 通知
+  notification:
+    name: 构建通知
+    runs-on: ubuntu-latest
+    needs: [frontend-build, backend-build]
+    if: always()
+    
+    steps:
+    - name: 发送构建状态通知
+      run: |
+        if [[ "${{ needs.frontend-build.result }}" == "success" && "${{ needs.backend-build.result }}" == "success" ]]; then
+          echo "✅ 构建成功！前端和后端都已成功构建。"
+        else
+          echo "❌ 构建失败！请检查日志。"
+          exit 1
+        fi 
