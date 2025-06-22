@@ -397,9 +397,9 @@ const submitOrder = async () => {
           <van-field name="tag" label="标签">
             <template #input>
               <van-radio-group v-model="newAddress.tag" direction="horizontal">
-                <van-radio name="家">家</van-radio>
-                <van-radio name="公司">公司</van-radio>
-                <van-radio name="学校">学校</van-radio>
+                <van-radio value="家">家</van-radio>
+                <van-radio value="公司">公司</van-radio>
+                <van-radio value="学校">学校</van-radio>
               </van-radio-group>
             </template>
           </van-field>
