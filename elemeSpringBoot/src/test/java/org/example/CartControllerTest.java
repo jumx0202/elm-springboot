@@ -323,7 +323,7 @@ class CartControllerTest {
         @Test
         @DisplayName("成功删除购物车商品")
         void testRemoveFromCartSuccess() throws Exception {
-            when(cartService.removeFromCart(1L)).thenReturn(0);
+            when(cartService.removeFromCart(1L)).thenReturn(true);
 
             mockMvc.perform(delete("/cart/remove/1"))
                     .andExpect(status().isOk())
@@ -336,7 +336,7 @@ class CartControllerTest {
         @Test
         @DisplayName("删除失败 - 商品不存在")
         void testRemoveFromCartNotFound() throws Exception {
-            when(cartService.removeFromCart(999L)).thenReturn(1);
+            when(cartService.removeFromCart(999L)).thenReturn(false);
 
             mockMvc.perform(delete("/cart/remove/999"))
                     .andExpect(status().isNotFound())
@@ -363,7 +363,7 @@ class CartControllerTest {
         @Test
         @DisplayName("成功清空购物车")
         void testClearCartSuccess() throws Exception {
-            when(cartService.clearCart("13812345678")).thenReturn(0);
+            when(cartService.clearCart("13812345678")).thenReturn(true);
 
             mockMvc.perform(delete("/cart/clear")
                     .param("userPhone", "13812345678"))
@@ -375,7 +375,7 @@ class CartControllerTest {
         @Test
         @DisplayName("清空失败 - 用户不存在")
         void testClearCartUserNotFound() throws Exception {
-            when(cartService.clearCart("19999999999")).thenReturn(1);
+            when(cartService.clearCart("19999999999")).thenReturn(false);
 
             mockMvc.perform(delete("/cart/clear")
                     .param("userPhone", "19999999999"))
@@ -392,7 +392,7 @@ class CartControllerTest {
         @Test
         @DisplayName("购物车验证通过")
         void testValidateCartSuccess() throws Exception {
-            when(cartService.validateCartForCheckout("13812345678")).thenReturn(0);
+            when(cartService.validateCartForCheckout("13812345678")).thenReturn(true);
 
             mockMvc.perform(get("/cart/validate")
                     .param("userPhone", "13812345678"))
@@ -404,7 +404,7 @@ class CartControllerTest {
         @Test
         @DisplayName("购物车验证失败 - 购物车为空")
         void testValidateCartEmpty() throws Exception {
-            when(cartService.validateCartForCheckout("13812345678")).thenReturn(1);
+            when(cartService.validateCartForCheckout("13812345678")).thenReturn(false);
 
             mockMvc.perform(get("/cart/validate")
                     .param("userPhone", "13812345678"))
@@ -416,7 +416,7 @@ class CartControllerTest {
         @Test
         @DisplayName("购物车验证失败 - 包含失效商品")
         void testValidateCartInvalidItems() throws Exception {
-            when(cartService.validateCartForCheckout("13812345678")).thenReturn(2);
+            when(cartService.validateCartForCheckout("13812345678")).thenReturn(false);
 
             mockMvc.perform(get("/cart/validate")
                     .param("userPhone", "13812345678"))

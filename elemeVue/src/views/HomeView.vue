@@ -1,16 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { vant } from 'vant'
-import {
-  Wap_home as WapHome,
-  Apps_o as AppsO,
-  Envelop_o as EnvelopO,
-  Shopping_cart_o as ShoppingCartO,
-  Manager_o as ManagerO,
-  Exchange as ExchangeO,
-  Location_o as LocationO,
-  Arrow_down as ArrowDown
-} from '@vant/icons'
 import 'vant/lib/index.css';
 import TabBar from '@/components/TabBar.vue'
 import axios from 'axios'

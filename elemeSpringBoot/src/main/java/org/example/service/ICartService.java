@@ -27,9 +27,9 @@ public interface ICartService {
     /**
      * 从购物车移除商品
      * @param itemId 商品项目ID
-     * @return 移除结果状态码
+     * @return 移除是否成功
      */
-    Integer removeFromCart(Long itemId);
+    Boolean removeFromCart(Long itemId);
     
     /**
      * 获取用户购物车列表
@@ -41,9 +41,9 @@ public interface ICartService {
     /**
      * 清空用户购物车
      * @param userPhoneNumber 用户手机号
-     * @return 清空结果状态码
+     * @return 清空是否成功
      */
-    Integer clearCart(String userPhoneNumber);
+    Boolean clearCart(String userPhoneNumber);
     
     /**
      * 计算购物车总金额
@@ -57,5 +57,5 @@ public interface ICartService {
      * @param userPhoneNumber 用户手机号
      * @return 验证结果
      */
-    boolean validateCartForCheckout(String userPhoneNumber);
+    Boolean validateCartForCheckout(String userPhoneNumber);
 } 
