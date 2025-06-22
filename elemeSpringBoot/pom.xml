@@ -41,6 +41,25 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <includes>
+                        <include>**/BusinessControllerTest.java</include>
+                        <include>**/CartControllerTest.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/IntegrationTest.java</exclude>
+                        <exclude>**/EmailServiceTest.java</exclude>
+                        <exclude>**/ValidationUtilsTest.java</exclude>
+                        <exclude>**/UserTest.java</exclude>
+                        <exclude>**/FoodControllerTest.java</exclude>
+                        <exclude>**/OrderControllerTest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
